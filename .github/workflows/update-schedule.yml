@@ -48,5 +48,6 @@ jobs:
           git config user.name "schedule-bot"
           git config user.email "actions@github.com"
           git commit -m "chore: update schedule data"
-          git pull --rebase origin main
+          # сгенерированные файлы полностью выводятся из источника, поэтому при конфликте побеждает свежая генерация
+          git pull --rebase -X theirs origin main || { git rebase --abort; exit 1; }
           git push origin main

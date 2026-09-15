@@ -1,0 +1,490 @@
+{
+ "generatedAt": "2026-09-15T09:12:57.288Z",
+ "sourceModified": "2026-09-15T09:09:43+00:00",
+ "sourceUrl": "https://yadi.sk/i/lXeVw9BMa5IA8Q",
+ "weeks": [
+  {
+   "index": 0,
+   "start": "2026-08-31",
+   "end": "2026-09-06",
+   "parity": "odd"
+  },
+  {
+   "index": 1,
+   "start": "2026-09-07",
+   "end": "2026-09-13",
+   "parity": "even"
+  },
+  {
+   "index": 2,
+   "start": "2026-09-14",
+   "end": "2026-09-20",
+   "parity": "odd"
+  },
+  {
+   "index": 3,
+   "start": "2026-09-21",
+   "end": "2026-09-27",
+   "parity": "even"
+  },
+  {
+   "index": 4,
+   "start": "2026-09-28",
+   "end": "2026-10-04",
+   "parity": "odd"
+  },
+  {
+   "index": 5,
+   "start": "2026-10-05",
+   "end": "2026-10-11",
+   "parity": "even"
+  },
+  {
+   "index": 6,
+   "start": "2026-10-12",
+   "end": "2026-10-18",
+   "parity": "odd"
+  },
+  {
+   "index": 7,
+   "start": "2026-10-19",
+   "end": "2026-10-25",
+   "parity": "even"
+  },
+  {
+   "index": 8,
+   "start": "2026-10-26",
+   "end": "2026-11-01",
+   "parity": "odd"
+  },
+  {
+   "index": 9,
+   "start": "2026-11-02",
+   "end": "2026-11-08",
+   "parity": "even"
+  },
+  {
+   "index": 10,
+   "start": "2026-11-09",
+   "end": "2026-11-15",
+   "parity": "odd"
+  },
+  {
+   "index": 11,
+   "start": "2026-11-16",
+   "end": "2026-11-22",
+   "parity": "even"
+  },
+  {
+   "index": 12,
+   "start": "2026-11-23",
+   "end": "2026-11-29",
+   "parity": "odd"
+  },
+  {
+   "index": 13,
+   "start": "2026-11-30",
+   "end": "2026-12-06",
+   "parity": "even"
+  },
+  {
+   "index": 14,
+   "start": "2026-12-07",
+   "end": "2026-12-13",
+   "parity": "odd"
+  },
+  {
+   "index": 15,
+   "start": "2026-12-14",
+   "end": "2026-12-20",
+   "parity": "even"
+  },
+  {
+   "index": 16,
+   "start": "2026-12-21",
+   "end": "2026-12-27",
+   "parity": "odd"
+  },
+  {
+   "index": 17,
+   "start": "2026-12-28",
+   "end": "2027-01-03",
+   "parity": "even"
+  },
+  {
+   "index": 18,
+   "start": "2027-01-04",
+   "end": "2027-01-10",
+   "parity": "odd"
+  },
+  {
+   "index": 19,
+   "start": "2027-01-11",
+   "end": "2027-01-17",
+   "parity": "even"
+  }
+ ],
+ "groups": [
+  {
+   "id": "ivt-11mo",
+   "name": "ИВТ-14МО",
+   "semesterEnd": "2027-01-08",
+   "lessons": [
+    {
+     "id": "ivt-11mo-d0p1-odd-99614bb4",
+     "day": 0,
+     "pair": 1,
+     "start": "09:00",
+     "end": "10:35",
+     "parity": "odd",
+     "kind": "regular",
+     "title": "Машинное обучение",
+     "teacher": "Быстров Л.Ю.",
+     "room": "309"
+    },
+    {
+     "id": "ivt-11mo-d0p2-both-d3b7c8f0",
+     "day": 0,
+     "pair": 2,
+     "start": "10:45",
+     "end": "12:20",
+     "parity": "both",
+     "kind": "elective",
+     "title": "Современные сетевые технологии",
+     "teacher": "Коновалов Е.В.",
+     "room": "201",
+     "slotId": "d0p2",
+     "optionId": "55fc4790"
+    },
+    {
+     "id": "ivt-11mo-d0p2-both-d7f355a0",
+     "day": 0,
+     "pair": 2,
+     "start": "10:45",
+     "end": "12:20",
+     "parity": "both",
+     "kind": "elective",
+     "title": "Технологии функционального программирования в современных информационных системах",
+     "teacher": "Васильев А.М.",
+     "room": "223",
+     "slotId": "d0p2",
+     "optionId": "65745e80"
+    },
+    {
+     "id": "ivt-11mo-d0p5-both-55ff8f26",
+     "day": 0,
+     "pair": 5,
+     "start": "16:50",
+     "end": "18:25",
+     "parity": "both",
+     "kind": "optional",
+     "title": "Современные редакторские технологии",
+     "teacher": "Шабаршин В.А.",
+     "room": "215"
+    },
+    {
+     "id": "ivt-11mo-d1p1-odd-00360d24",
+     "day": 1,
+     "pair": 1,
+     "start": "09:00",
+     "end": "10:35",
+     "parity": "odd",
+     "kind": "regular",
+     "title": "Иностранный язык",
+     "teacher": "Пермякова Д.И.",
+     "room": "416"
+    },
+    {
+     "id": "ivt-11mo-d1p2-both-874c02d1",
+     "day": 1,
+     "pair": 2,
+     "start": "10:45",
+     "end": "12:20",
+     "parity": "both",
+     "kind": "regular",
+     "title": "Анализ алгоритмов и сложность вычислений",
+     "teacher": "Николаев А.В.",
+     "room": "304"
+    },
+    {
+     "id": "ivt-11mo-d1p3-both-83d718a6",
+     "day": 1,
+     "pair": 3,
+     "start": "13:20",
+     "end": "14:55",
+     "parity": "both",
+     "kind": "regular",
+     "title": "Автоматический анализ текстов",
+     "teacher": "Адрианова А.М.",
+     "room": "304"
+    },
+    {
+     "id": "ivt-11mo-d1p4-both-279cfb5c",
+     "day": 1,
+     "pair": 4,
+     "start": "15:05",
+     "end": "16:40",
+     "parity": "both",
+     "kind": "regular",
+     "title": "Современная философия и методология науки",
+     "teacher": "Мусин М.З.",
+     "room": "312"
+    },
+    {
+     "id": "ivt-11mo-d3p2-both-e76f3bcc",
+     "day": 3,
+     "pair": 2,
+     "start": "10:45",
+     "end": "12:20",
+     "parity": "both",
+     "kind": "regular",
+     "title": "Непрерывные математический модели",
+     "teacher": "Глызин С.Д.",
+     "room": "226"
+    },
+    {
+     "id": "ivt-11mo-d3p3-both-8b6de4a5",
+     "day": 3,
+     "pair": 3,
+     "start": "13:20",
+     "end": "14:55",
+     "parity": "both",
+     "kind": "elective",
+     "title": "Оценка качества программного обеспечения",
+     "teacher": "Хинт",
+     "room": "304",
+     "online": true,
+     "slotId": "d3p3",
+     "optionId": "fd4027c5"
+    },
+    {
+     "id": "ivt-11mo-d3p3-both-2b5d51e3",
+     "day": 3,
+     "pair": 3,
+     "start": "13:20",
+     "end": "14:55",
+     "parity": "both",
+     "kind": "elective",
+     "title": "Нейросети и нерокомпьютеры",
+     "teacher": "Коновалов Е.В.",
+     "room": "204",
+     "slotId": "d3p3",
+     "optionId": "65352a83"
+    },
+    {
+     "id": "ivt-11mo-d4p3-odd-99614bb4",
+     "day": 4,
+     "pair": 3,
+     "start": "13:20",
+     "end": "14:55",
+     "parity": "odd",
+     "kind": "regular",
+     "title": "Машинное обучение",
+     "teacher": "Гладков А.Н.",
+     "room": "213"
+    }
+   ],
+   "slots": [
+    {
+     "slotId": "d0p2",
+     "day": 0,
+     "pair": 2,
+     "options": [
+      {
+       "optionId": "55fc4790",
+       "title": "Современные сетевые технологии"
+      },
+      {
+       "optionId": "65745e80",
+       "title": "Технологии функционального программирования в современных информационных системах"
+      }
+     ]
+    },
+    {
+     "slotId": "d3p3",
+     "day": 3,
+     "pair": 3,
+     "options": [
+      {
+       "optionId": "fd4027c5",
+       "title": "Оценка качества программного обеспечения"
+      },
+      {
+       "optionId": "65352a83",
+       "title": "Нейросети и нерокомпьютеры"
+      }
+     ]
+    }
+   ],
+   "hasOptional": true
+  },
+  {
+   "id": "pie-13mo",
+   "name": "ПИЭ-13МО",
+   "semesterEnd": "2027-01-11",
+   "lessons": [
+    {
+     "id": "pie-13mo-d0p1-odd-99614bb4",
+     "day": 0,
+     "pair": 1,
+     "start": "09:00",
+     "end": "10:35",
+     "parity": "odd",
+     "kind": "regular",
+     "title": "Машинное обучение",
+     "teacher": "Быстров Л.Ю.",
+     "room": "309"
+    },
+    {
+     "id": "pie-13mo-d0p2-both-7417afe3",
+     "day": 0,
+     "pair": 2,
+     "start": "10:45",
+     "end": "12:20",
+     "parity": "both",
+     "kind": "regular",
+     "title": "Финансовый и инвестиционный анализ ИТ-проектов",
+     "teacher": "Чистяков А.Е.",
+     "room": "309"
+    },
+    {
+     "id": "pie-13mo-d0p3-both-de4f3863",
+     "day": 0,
+     "pair": 3,
+     "start": "13:20",
+     "end": "14:55",
+     "parity": "both",
+     "kind": "regular",
+     "title": "Вычислительные методы прогнозирования временных рядов",
+     "teacher": "Морозов А.Н.",
+     "room": "216"
+    },
+    {
+     "id": "pie-13mo-d0p5-both-ae75f462",
+     "day": 0,
+     "pair": 5,
+     "start": "16:50",
+     "end": "18:25",
+     "parity": "both",
+     "kind": "elective",
+     "title": "Управление ИТ-проектами",
+     "teacher": "Ерофеев Александр Александрович (ПравоТех)",
+     "online": true,
+     "note": "14.09 пары не будет",
+     "excludeDates": [
+      "2026-09-14"
+     ],
+     "slotId": "d0p5",
+     "optionId": "adc5c902"
+    },
+    {
+     "id": "pie-13mo-d0p5-both-eb2103e4",
+     "day": 0,
+     "pair": 5,
+     "start": "16:50",
+     "end": "18:25",
+     "parity": "both",
+     "kind": "elective",
+     "title": "Математические методы и модели принятия решения",
+     "online": true,
+     "note": "Платформа «Наука онлайн». 14.09 пары не будет",
+     "excludeDates": [
+      "2026-09-14"
+     ],
+     "slotId": "d0p5",
+     "optionId": "5c0bee84"
+    },
+    {
+     "id": "pie-13mo-d1p2-odd-00360d24",
+     "day": 1,
+     "pair": 2,
+     "start": "10:45",
+     "end": "12:20",
+     "parity": "odd",
+     "kind": "regular",
+     "title": "Иностранный язык",
+     "teacher": "Пермякова Д.И.",
+     "room": "416"
+    },
+    {
+     "id": "pie-13mo-d1p3-both-83d718a6",
+     "day": 1,
+     "pair": 3,
+     "start": "13:20",
+     "end": "14:55",
+     "parity": "both",
+     "kind": "regular",
+     "title": "Автоматический анализ текстов",
+     "teacher": "Адрианова А.М.",
+     "room": "304"
+    },
+    {
+     "id": "pie-13mo-d1p4-both-279cfb5c",
+     "day": 1,
+     "pair": 4,
+     "start": "15:05",
+     "end": "16:40",
+     "parity": "both",
+     "kind": "regular",
+     "title": "Современная философия и методология науки",
+     "teacher": "Мусин М.З.",
+     "room": "312"
+    },
+    {
+     "id": "pie-13mo-d1p5-both-ac096b4a",
+     "day": 1,
+     "pair": 5,
+     "start": "16:50",
+     "end": "18:25",
+     "parity": "both",
+     "kind": "elective",
+     "title": "Промышленная разработка",
+     "teacher": "Полетаев А.Ю.",
+     "room": "223"
+    },
+    {
+     "id": "pie-13mo-d2p1-both-6a4970e3",
+     "day": 2,
+     "pair": 1,
+     "start": "09:00",
+     "end": "10:35",
+     "parity": "both",
+     "kind": "regular",
+     "title": "Практика в НПО Криста",
+     "note": "с 9.09.2026",
+     "startFrom": "2026-09-09"
+    },
+    {
+     "id": "pie-13mo-d4p3-odd-99614bb4",
+     "day": 4,
+     "pair": 3,
+     "start": "13:20",
+     "end": "14:55",
+     "parity": "odd",
+     "kind": "regular",
+     "title": "Машинное обучение",
+     "teacher": "Гладков А.Н.",
+     "room": "213"
+    }
+   ],
+   "slots": [
+    {
+     "slotId": "d0p5",
+     "day": 0,
+     "pair": 5,
+     "options": [
+      {
+       "optionId": "adc5c902",
+       "title": "Управление ИТ-проектами"
+      },
+      {
+       "optionId": "5c0bee84",
+       "title": "Математические методы и модели принятия решения"
+      }
+     ]
+    }
+   ],
+   "hasOptional": false
+  }
+ ]
+}

@@ -1,0 +1,52 @@
+name: Update schedule data
+
+on:
+  schedule:
+    # каждые 3 часа (UTC)
+    - cron: '0 */3 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'shared/**'
+      - 'scripts/**'
+      - 'data/**'
+      - '.github/workflows/update-schedule.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-schedule
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Fetch xlsx and generate data
+        run: npm run data
+
+      - name: Commit and push if changed
+        run: |
+          git add public/data public/ics
+          if git diff --cached --quiet; then
+            echo "Изменений нет"
+            exit 0
+          fi
+          git config user.name "schedule-bot"
+          git config user.email "actions@github.com"
+          git commit -m "chore: update schedule data"
+          git pull --rebase origin main
+          git push origin main

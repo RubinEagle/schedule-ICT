@@ -1,14 +1,18 @@
-import { useEffect, useMemo, useState } from 'react';
-import type { Group, GroupSettings, Schedule } from '../shared/types';
-import { findWeek } from '../shared/expand';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { GroupSettings, Schedule } from '../shared/types';
+import { filterLessons, findWeek, occurrenceDate } from '../shared/expand';
 import { normalizeSettings } from '../shared/variants';
-import { todayISO } from '../shared/util';
+import { addDays, todayISO } from '../shared/util';
 import { loadStored, saveStored } from './lib/settings';
 import { useSchedule } from './lib/useSchedule';
+import { hhmm, useNow } from './lib/time';
 import { GroupTabs } from './components/GroupTabs';
 import { WeekNav } from './components/WeekNav';
 import { DayList } from './components/DayList';
-import { SettingsSheet } from './components/SettingsSheet';
+import { DayStrip } from './components/DayStrip';
+import { NowBanner } from './components/NowBanner';
+import { ElectiveNudge } from './components/ElectiveNudge';
+import { SettingsSheet, type SheetSection } from './components/SettingsSheet';
 import { Footer } from './components/Footer';
 
 export function App() {
@@ -31,8 +35,12 @@ function Loaded({ schedule }: { schedule: Schedule }) {
   const stored = useMemo(loadStored, []);
   const [groupId, setGroupId] = useState(() => (schedule.groups.some((g) => g.id === stored.group) ? stored.group! : schedule.groups[0].id));
   const [allSettings, setAllSettings] = useState<Record<string, GroupSettings>>(stored.settings);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [today, setToday] = useState(todayISO);
+  const [nudgeDismissed, setNudgeDismissed] = useState(stored.nudgeDismissed ?? false);
+  const [sheet, setSheet] = useState<{ open: boolean; section: SheetSection }>({ open: false, section: 'settings' });
+
+  const now = useNow();
+  const today = todayISO(now);
+  const nowHHMM = hhmm(now);
 
   const group = schedule.groups.find((g) => g.id === groupId) ?? schedule.groups[0];
   const settings = useMemo(() => normalizeSettings(group, allSettings[group.id]), [group, allSettings]);
@@ -41,48 +49,111 @@ function Loaded({ schedule }: { schedule: Schedule }) {
   const initialWeekIndex = currentWeek ? currentWeek.index : today < schedule.weeks[0].start ? 0 : schedule.weeks.length - 1;
   const [weekIndex, setWeekIndex] = useState(initialWeekIndex);
   const week = schedule.weeks[weekIndex];
+  const isCurrentWeek = currentWeek?.index === weekIndex;
+  const todayDay = (new Date(now.getFullYear(), now.getMonth(), now.getDate()).getDay() + 6) % 7;
 
   useEffect(() => {
-    saveStored({ group: groupId, settings: allSettings });
-  }, [groupId, allSettings]);
-
-  // Обновляем «сегодня» при возврате на вкладку (страница может висеть открытой сутками)
-  useEffect(() => {
-    const onVisible = () => document.visibilityState === 'visible' && setToday(todayISO());
-    document.addEventListener('visibilitychange', onVisible);
-    return () => document.removeEventListener('visibilitychange', onVisible);
-  }, []);
+    saveStored({ group: groupId, settings: allSettings, nudgeDismissed });
+  }, [groupId, allSettings, nudgeDismissed]);
 
   const updateSettings = (next: GroupSettings) => setAllSettings((prev) => ({ ...prev, [group.id]: next }));
+  const openSheet = (section: SheetSection) => setSheet({ open: true, section });
+
+  // Дни с парами на этой неделе — для точек в полоске дней
+  const daysWithLessons = useMemo(() => {
+    const ls = filterLessons(group, settings);
+    const set = new Set<number>();
+    for (let d = 0; d < 6; d++) {
+      const date = addDays(week.start, d);
+      if (ls.some((l) => l.day === d && occurrenceDate(l, week, group) === date)) set.add(d);
+    }
+    return set;
+  }, [group, settings, week]);
+
+  // Прокрутка к дню (полоска дней на телефоне, автопрокрутка к сегодня)
+  const dayRefs = useRef<(HTMLElement | null)[]>([]);
+  const scrollToDay = useCallback((day: number, behavior: ScrollBehavior = 'smooth') => {
+    const el = dayRefs.current[day];
+    if (!el) return;
+    const offset = (document.querySelector('.header') as HTMLElement | null)?.offsetHeight ?? 0;
+    const top = el.getBoundingClientRect().top + window.scrollY - offset - 8;
+    window.scrollTo({ top: Math.max(0, top), behavior });
+  }, []);
+
+  const isMobile = () => window.matchMedia('(max-width: 899px)').matches;
+  useEffect(() => {
+    if (isCurrentWeek && isMobile() && todayDay <= 5) scrollToDay(todayDay, 'auto');
+    else window.scrollTo({ top: 0 });
+  }, [weekIndex, group.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Свайп влево/вправо по расписанию листает недели; стрелки на клавиатуре — тоже
+  const touch = useRef<{ x: number; y: number } | null>(null);
+  const changeWeek = (delta: number) => setWeekIndex((i) => Math.min(schedule.weeks.length - 1, Math.max(0, i + delta)));
+  const onTouchStart = (e: React.TouchEvent) => {
+    touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (!touch.current) return;
+    const dx = e.changedTouches[0].clientX - touch.current.x;
+    const dy = e.changedTouches[0].clientY - touch.current.y;
+    touch.current = null;
+    if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5) changeWeek(dx < 0 ? 1 : -1);
+  };
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (sheet.open || (e.target as HTMLElement)?.tagName === 'INPUT') return;
+      if (e.key === 'ArrowLeft') changeWeek(-1);
+      if (e.key === 'ArrowRight') changeWeek(1);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [sheet.open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <>
       <header className="header">
         <div className="header__row">
           <h1 className="header__title">Расписание</h1>
-          <button type="button" className="icon-btn" aria-label="Настройки и календарь" onClick={() => setSettingsOpen(true)}>
-            <GearIcon />
-            <span className="icon-btn__label">Настройки</span>
-          </button>
+          <div className="header__actions">
+            <button type="button" className="icon-btn" onClick={() => openSheet('calendar')} aria-label="Подписка на календарь">
+              <CalendarIcon />
+              <span className="icon-btn__label">Календарь</span>
+            </button>
+            <button type="button" className="icon-btn" onClick={() => openSheet('settings')} aria-label="Настройки">
+              <GearIcon />
+              <span className="icon-btn__label">Настройки</span>
+            </button>
+          </div>
         </div>
         <GroupTabs groups={schedule.groups} value={group.id} onChange={setGroupId} />
+        <div className="header__mobile">
+          <DayStrip week={week} today={today} daysWithLessons={daysWithLessons} onPick={(d) => scrollToDay(d)} />
+        </div>
       </header>
 
-      <main className="main">
-        <WeekNav
-          weeks={schedule.weeks}
-          index={weekIndex}
-          currentIndex={currentWeek?.index}
-          onChange={setWeekIndex}
+      <main className="main" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+        <WeekNav weeks={schedule.weeks} index={weekIndex} currentIndex={currentWeek?.index} onChange={setWeekIndex} />
+        {isCurrentWeek && <NowBanner group={group} week={week} settings={settings} today={today} nowHHMM={nowHHMM} todayDay={todayDay} />}
+        <ElectiveNudge group={group} settings={settings} dismissed={nudgeDismissed} onOpen={() => openSheet('settings')} onDismiss={() => setNudgeDismissed(true)} />
+        <DayList
+          group={group}
+          week={week}
+          settings={settings}
+          pairTimes={schedule.pairTimes}
+          today={today}
+          nowHHMM={nowHHMM}
+          onOpenSettings={() => openSheet('settings')}
+          dayRefs={dayRefs}
         />
-        <DayList group={group} week={week} settings={settings} today={today} onOpenSettings={() => setSettingsOpen(true)} />
+        <p className="hint">Листайте недели свайпом или стрелками ← →</p>
       </main>
 
       <Footer schedule={schedule} />
 
       <SettingsSheet
-        open={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
+        open={sheet.open}
+        section={sheet.section}
+        onClose={() => setSheet((s) => ({ ...s, open: false }))}
         group={group}
         settings={settings}
         onChange={updateSettings}
@@ -111,4 +182,11 @@ function GearIcon() {
   );
 }
 
-export type { Group };
+function CalendarIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <path d="M3 10h18M8 3v4M16 3v4" />
+    </svg>
+  );
+}

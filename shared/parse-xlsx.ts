@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx';
-import type { ElectiveSlot, Group, Lesson, Parity, Schedule, Week } from './types';
+import type { ElectiveSlot, Group, Lesson, PairTime, Parity, Schedule, Week } from './types';
 import { parseCell, type ParsedCell, type ParsedOption, type YearContext } from './parse-cell';
 import { DAY_NAMES, excelSerialToISO, normalizeSpaces, parseISODate, shortHash } from './util';
 
@@ -209,7 +209,8 @@ export function parseWorkbook(data: ArrayBuffer | Uint8Array, overrides: Overrid
     if (!gr.lessons.length) throw new Error(`У группы ${gr.name} не найдено ни одного занятия — возможно, структура таблицы изменилась`);
   }
 
-  return { weeks, groups };
+  const pairTimes: PairTime[] = pairRows.map((p) => ({ day: p.day, pair: p.pair, start: p.start, end: p.end }));
+  return { weeks, pairTimes, groups };
 }
 
 export function optionIdOf(title: string): string {

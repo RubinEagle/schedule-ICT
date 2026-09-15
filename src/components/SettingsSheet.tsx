@@ -4,17 +4,23 @@ import { ALL } from '../../shared/variants';
 import { DAY_SHORT } from '../../shared/util';
 import { SubscribeBlock } from './SubscribeBlock';
 
-type Props = { open: boolean; onClose: () => void; group: Group; settings: GroupSettings; onChange: (s: GroupSettings) => void };
+export type SheetSection = 'settings' | 'calendar';
 
-export function SettingsSheet({ open, onClose, group, settings, onChange }: Props) {
+type Props = { open: boolean; section: SheetSection; onClose: () => void; group: Group; settings: GroupSettings; onChange: (s: GroupSettings) => void };
+
+export function SettingsSheet({ open, section, onClose, group, settings, onChange }: Props) {
   const ref = useRef<HTMLDialogElement>(null);
+  const calendarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const dlg = ref.current;
     if (!dlg) return;
-    if (open && !dlg.open) dlg.showModal();
+    if (open && !dlg.open) {
+      dlg.showModal();
+      if (section === 'calendar') requestAnimationFrame(() => calendarRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }));
+    }
     if (!open && dlg.open) dlg.close();
-  }, [open]);
+  }, [open, section]);
 
   const setElective = (slotId: string, value: string) => onChange({ ...settings, electives: { ...settings.electives, [slotId]: value } });
 
@@ -29,7 +35,7 @@ export function SettingsSheet({ open, onClose, group, settings, onChange }: Prop
     >
       <div className="sheet__inner">
         <div className="sheet__head">
-          <h2 className="sheet__title">Настройки · {group.name}</h2>
+          <h2 className="sheet__title">{section === 'calendar' ? 'Календарь' : 'Настройки'} · {group.name}</h2>
           <button type="button" className="icon-btn icon-btn--plain" onClick={onClose} aria-label="Закрыть">
             ✕
           </button>
@@ -72,7 +78,9 @@ export function SettingsSheet({ open, onClose, group, settings, onChange }: Prop
           </fieldset>
         )}
 
-        <SubscribeBlock group={group} settings={settings} />
+        <div ref={calendarRef}>
+          <SubscribeBlock group={group} settings={settings} />
+        </div>
       </div>
     </dialog>
   );

@@ -54,11 +54,15 @@ export type Group = {
   hasOptional: boolean;
 };
 
+/** Стандартное время пары в конкретный день недели (в субботу оно отличается) */
+export type PairTime = { day: number; pair: number; start: string; end: string };
+
 export type Schedule = {
   generatedAt: string;
   sourceModified: string;
   sourceUrl: string;
   weeks: Week[];
+  pairTimes: PairTime[];
   groups: Group[];
 };
 

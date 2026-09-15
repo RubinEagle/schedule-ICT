@@ -18,6 +18,12 @@ describe('parseWorkbook', () => {
     expect(parsed.weeks[19]).toMatchObject({ start: '2027-01-11', parity: 'even' });
   });
 
+  it('время пар по дням, суббота отличается', () => {
+    expect(parsed.pairTimes.find((p) => p.day === 0 && p.pair === 3)).toMatchObject({ start: '13:20', end: '14:55' });
+    expect(parsed.pairTimes.find((p) => p.day === 5 && p.pair === 3)).toMatchObject({ start: '12:30', end: '14:05' });
+    expect(parsed.pairTimes.filter((p) => p.day === 0)).toHaveLength(5);
+  });
+
   it('группы и конец семестра', () => {
     expect(ivt.name).toBe('ИВТ-11МО');
     expect(ivt.semesterEnd).toBe('2027-01-08');

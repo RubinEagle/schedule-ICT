@@ -5,6 +5,8 @@ const KEY = 'schedule-ict:v1';
 export type Stored = {
   group?: string;
   settings: Record<string, GroupSettings>;
+  /** Подсказка про выбор курсов скрыта пользователем */
+  nudgeDismissed?: boolean;
 };
 
 export function loadStored(): Stored {
@@ -12,7 +14,7 @@ export function loadStored(): Stored {
     const raw = localStorage.getItem(KEY);
     if (!raw) return { settings: {} };
     const parsed = JSON.parse(raw) as Partial<Stored>;
-    return { group: typeof parsed.group === 'string' ? parsed.group : undefined, settings: parsed.settings ?? {} };
+    return { group: typeof parsed.group === 'string' ? parsed.group : undefined, settings: parsed.settings ?? {}, nudgeDismissed: parsed.nudgeDismissed === true };
   } catch {
     return { settings: {} };
   }

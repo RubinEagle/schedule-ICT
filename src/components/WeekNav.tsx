@@ -15,7 +15,7 @@ export function WeekNav({ weeks, index, currentIndex, onChange }: Props) {
         <div className="weeknav__range">{formatWeekRange(week.start, week.end)}</div>
         <div className="weeknav__meta">
           <span className={`badge badge--${week.parity}`}>{week.parity === 'odd' ? 'числитель' : 'знаменатель'}</span>
-          <span className="weeknav__num">{index + 1}-я неделя</span>
+          <span className="weeknav__num">{isCurrent ? 'текущая' : `${index + 1}-я`} неделя</span>
           {!isCurrent && currentIndex !== undefined && (
             <button type="button" className="link-btn" onClick={() => onChange(currentIndex)}>
               Сегодня

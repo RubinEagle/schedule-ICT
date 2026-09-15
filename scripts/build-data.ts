@@ -63,7 +63,7 @@ async function main() {
   // чтобы не плодить коммиты и не перезаписывать все .ics ради одного DTSTAMP.
   if (existsSync(OUT_DATA)) {
     const prev = JSON.parse(await readFile(OUT_DATA, 'utf8')) as Schedule;
-    const content = (s: Schedule) => JSON.stringify({ weeks: s.weeks, groups: s.groups, sourceUrl: s.sourceUrl });
+    const content = (s: Schedule) => JSON.stringify({ weeks: s.weeks, pairTimes: s.pairTimes, groups: s.groups, sourceUrl: s.sourceUrl });
     if (content(prev) === content(schedule)) {
       schedule.generatedAt = prev.generatedAt;
       schedule.sourceModified = prev.sourceModified;

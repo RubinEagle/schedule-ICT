@@ -1,12 +1,21 @@
 import type { Lesson } from '../../shared/types';
 import { locationOf } from '../../shared/expand';
+import { toMinutes } from '../lib/time';
 
-function isOver(lesson: Lesson, date: string, today: string): boolean {
-  if (date < today) return true;
-  if (date > today) return false;
-  const now = new Date();
-  const hhmm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-  return lesson.end <= hhmm;
+export type TimeState = 'past' | 'now' | 'future';
+
+export function timeState(start: string, end: string, date: string, today: string, nowHHMM: string): TimeState {
+  if (date < today) return 'past';
+  if (date > today) return 'future';
+  if (nowHHMM >= end) return 'past';
+  if (nowHHMM >= start) return 'now';
+  return 'future';
+}
+
+function progress(start: string, end: string, nowHHMM: string): number {
+  const a = toMinutes(start);
+  const b = toMinutes(end);
+  return Math.min(1, Math.max(0, (toMinutes(nowHHMM) - a) / (b - a)));
 }
 
 function Badges({ lesson }: { lesson: Lesson }) {
@@ -20,16 +29,31 @@ function Badges({ lesson }: { lesson: Lesson }) {
   );
 }
 
-export function LessonCard({ lesson, date, today }: { lesson: Lesson; date: string; today: string }) {
-  const over = isOver(lesson, date, today);
+function TimeCol({ start, end, pair, state, nowHHMM, nowLabel = 'идёт' }: { start: string; end: string; pair: number; state: TimeState; nowHHMM: string; nowLabel?: string }) {
+  return (
+    <div className="lesson__time">
+      <span className="lesson__start">{start}</span>
+      <span className="lesson__end">{end}</span>
+      {state === 'now' ? (
+        <span className="lesson__now" title="Сейчас">
+          {nowLabel}
+          <i className="lesson__progress" style={{ width: `${Math.round(progress(start, end, nowHHMM) * 100)}%` }} />
+        </span>
+      ) : (
+        <span className="lesson__pair">{pair} пара</span>
+      )}
+    </div>
+  );
+}
+
+type CardProps = { lesson: Lesson; date: string; today: string; nowHHMM: string };
+
+export function LessonCard({ lesson, date, today, nowHHMM }: CardProps) {
+  const state = timeState(lesson.start, lesson.end, date, today, nowHHMM);
   const loc = locationOf(lesson);
   return (
-    <li className={`lesson${over ? ' is-over' : ''}`}>
-      <div className="lesson__time">
-        <span className="lesson__start">{lesson.start}</span>
-        <span className="lesson__end">{lesson.end}</span>
-        <span className="lesson__pair">{lesson.pair} пара</span>
-      </div>
+    <li className={`lesson is-${state}`}>
+      <TimeCol start={lesson.start} end={lesson.end} pair={lesson.pair} state={state} nowHHMM={nowHHMM} />
       <div className="lesson__body">
         <div className="lesson__title">
           {lesson.title} <Badges lesson={lesson} />
@@ -44,16 +68,12 @@ export function LessonCard({ lesson, date, today }: { lesson: Lesson; date: stri
   );
 }
 
-export function ElectiveChoiceCard({ lessons, date, today, onChoose }: { lessons: Lesson[]; date: string; today: string; onChoose: () => void }) {
+export function ElectiveChoiceCard({ lessons, date, today, nowHHMM, onChoose }: { lessons: Lesson[]; date: string; today: string; nowHHMM: string; onChoose: () => void }) {
   const first = lessons[0];
-  const over = isOver(first, date, today);
+  const state = timeState(first.start, first.end, date, today, nowHHMM);
   return (
-    <li className={`lesson lesson--choice${over ? ' is-over' : ''}`}>
-      <div className="lesson__time">
-        <span className="lesson__start">{first.start}</span>
-        <span className="lesson__end">{first.end}</span>
-        <span className="lesson__pair">{first.pair} пара</span>
-      </div>
+    <li className={`lesson lesson--choice is-${state}`}>
+      <TimeCol start={first.start} end={first.end} pair={first.pair} state={state} nowHHMM={nowHHMM} />
       <div className="lesson__body">
         <div className="lesson__choice-head">
           <span className="tag tag--elective">к.в.</span>
@@ -80,6 +100,16 @@ export function ElectiveChoiceCard({ lessons, date, today, onChoose }: { lessons
           })}
         </ul>
       </div>
+    </li>
+  );
+}
+
+export function EmptyPairCard({ pair, start, end, date, today, nowHHMM }: { pair: number; start: string; end: string; date: string; today: string; nowHHMM: string }) {
+  const state = timeState(start, end, date, today, nowHHMM);
+  return (
+    <li className={`lesson lesson--empty is-${state}`} aria-label={`${pair} пара: нет пары`}>
+      <TimeCol start={start} end={end} pair={pair} state={state} nowHHMM={nowHHMM} nowLabel="окно" />
+      <div className="lesson__body lesson__body--empty">Нет пары</div>
     </li>
   );
 }

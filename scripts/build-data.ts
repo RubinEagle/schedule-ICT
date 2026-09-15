@@ -59,11 +59,16 @@ async function main() {
     ...parsed,
   };
 
-  // generatedAt не должен приводить к коммиту, если данные не изменились
+  // Если само расписание не изменилось (владелец просто пересохранил файл), оставляем прежние метки времени,
+  // чтобы не плодить коммиты и не перезаписывать все .ics ради одного DTSTAMP.
   if (existsSync(OUT_DATA)) {
     const prev = JSON.parse(await readFile(OUT_DATA, 'utf8')) as Schedule;
-    const same = JSON.stringify({ ...prev, generatedAt: '' }) === JSON.stringify({ ...schedule, generatedAt: '' });
-    if (same) schedule.generatedAt = prev.generatedAt;
+    const content = (s: Schedule) => JSON.stringify({ weeks: s.weeks, groups: s.groups, sourceUrl: s.sourceUrl });
+    if (content(prev) === content(schedule)) {
+      schedule.generatedAt = prev.generatedAt;
+      schedule.sourceModified = prev.sourceModified;
+      console.log('Расписание не изменилось, метки времени сохранены');
+    }
   }
 
   await mkdir(path.dirname(OUT_DATA), { recursive: true });

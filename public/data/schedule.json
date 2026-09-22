@@ -1,6 +1,6 @@
 {
- "generatedAt": "2026-09-17T08:16:36.504Z",
- "sourceModified": "2026-09-17T07:54:50+00:00",
+ "generatedAt": "2026-09-22T13:49:03.910Z",
+ "sourceModified": "2026-09-22T13:38:55+00:00",
  "sourceUrl": "https://yadi.sk/i/lXeVw9BMa5IA8Q",
  "weeks": [
   {
@@ -551,10 +551,6 @@
      "title": "Управление ИТ-проектами",
      "teacher": "Ерофеев Александр Александрович (ПравоТех)",
      "online": true,
-     "note": "14.09 пары не будет",
-     "excludeDates": [
-      "2026-09-14"
-     ],
      "slotId": "d0p5",
      "optionId": "adc5c902"
     },
@@ -568,10 +564,7 @@
      "kind": "elective",
      "title": "Математические методы и модели принятия решения",
      "online": true,
-     "note": "Платформа «Наука онлайн». 14.09 пары не будет",
-     "excludeDates": [
-      "2026-09-14"
-     ],
+     "note": "Платформа «Наука онлайн»",
      "slotId": "d0p5",
      "optionId": "5c0bee84"
     },

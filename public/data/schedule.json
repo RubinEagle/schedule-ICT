@@ -1,6 +1,6 @@
 {
- "generatedAt": "2026-09-24T08:00:56.775Z",
- "sourceModified": "2026-09-24T07:41:03+00:00",
+ "generatedAt": "2026-09-25T08:25:46.457Z",
+ "sourceModified": "2026-09-25T08:07:01+00:00",
  "sourceUrl": "https://yadi.sk/i/lXeVw9BMa5IA8Q",
  "weeks": [
   {
@@ -449,16 +449,16 @@
      "note": "начало в 15:00 онлайн (ссылка в группе)"
     },
     {
-     "id": "ivt-11mo-d4p3-odd-99614bb4",
+     "id": "ivt-11mo-d4p1-even-99614bb4",
      "day": 4,
-     "pair": 3,
-     "start": "13:20",
-     "end": "14:55",
-     "parity": "odd",
+     "pair": 1,
+     "start": "09:00",
+     "end": "10:35",
+     "parity": "even",
      "kind": "regular",
      "title": "Машинное обучение",
      "teacher": "Гладков А.Н.",
-     "room": "213"
+     "room": "216"
     }
    ],
    "slots": [
@@ -610,16 +610,16 @@
      "startFrom": "2026-09-09"
     },
     {
-     "id": "pie-13mo-d4p3-odd-99614bb4",
+     "id": "pie-13mo-d4p1-even-99614bb4",
      "day": 4,
-     "pair": 3,
-     "start": "13:20",
-     "end": "14:55",
-     "parity": "odd",
+     "pair": 1,
+     "start": "09:00",
+     "end": "10:35",
+     "parity": "even",
      "kind": "regular",
      "title": "Машинное обучение",
      "teacher": "Гладков А.Н.",
-     "room": "213"
+     "room": "216"
     }
    ],
    "slots": [

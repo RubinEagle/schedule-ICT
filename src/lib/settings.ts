@@ -1,23 +1,45 @@
 import type { GroupSettings } from '../../shared/types';
+import type { SourceId } from './source';
 
-const KEY = 'schedule-ict:v1';
+const KEY = 'schedule-ict:v2';
+const LEGACY_KEY = 'schedule-ict:v1';
 
 export type Stored = {
+  /** Выбранная группа на вкладке «Из таблицы» */
   group?: string;
-  settings: Record<string, GroupSettings>;
+  /** Настройки групп отдельно для каждого источника: id групп и курсов по выбору у них разные */
+  settings: Record<SourceId, Record<string, GroupSettings>>;
   /** Подсказка про выбор курсов скрыта пользователем */
   nudgeDismissed?: boolean;
 };
 
+const empty = (): Stored => ({ settings: { local: {}, table: {} } });
+
 export function loadStored(): Stored {
   try {
     const raw = localStorage.getItem(KEY);
-    if (!raw) return { settings: {} };
-    const parsed = JSON.parse(raw) as Partial<Stored>;
-    return { group: typeof parsed.group === 'string' ? parsed.group : undefined, settings: parsed.settings ?? {}, nudgeDismissed: parsed.nudgeDismissed === true };
+    if (raw) {
+      const p = JSON.parse(raw) as Partial<Stored>;
+      return {
+        group: typeof p.group === 'string' ? p.group : undefined,
+        settings: { local: p.settings?.local ?? {}, table: p.settings?.table ?? {} },
+        nudgeDismissed: p.nudgeDismissed === true,
+      };
+    }
+    // Настройки прошлой версии относились к таблице — переносим их туда
+    const legacy = localStorage.getItem(LEGACY_KEY);
+    if (legacy) {
+      const p = JSON.parse(legacy) as { group?: unknown; settings?: Record<string, GroupSettings>; nudgeDismissed?: unknown };
+      return {
+        group: typeof p.group === 'string' ? p.group : undefined,
+        settings: { local: {}, table: p.settings ?? {} },
+        nudgeDismissed: p.nudgeDismissed === true,
+      };
+    }
   } catch {
-    return { settings: {} };
+    /* битые данные — начинаем с чистого листа */
   }
+  return empty();
 }
 
 export function saveStored(s: Stored): void {

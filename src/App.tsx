@@ -1,42 +1,108 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { GroupSettings, Schedule } from '../shared/types';
+import type { GroupSettings, Schedule, Week } from '../shared/types';
+import { diffGroups, findMatchingGroup, isSignificant, type LessonDiff } from '../shared/diff';
 import { filterLessons, findWeek, occurrenceDate } from '../shared/expand';
 import { normalizeSettings } from '../shared/variants';
 import { addDays, todayISO } from '../shared/util';
 import { loadStored, saveStored } from './lib/settings';
 import { useSchedule } from './lib/useSchedule';
+import { SOURCES, useSourceRoute, type Source, type SourceId } from './lib/source';
 import { hhmm, useNow } from './lib/time';
 import { GroupTabs } from './components/GroupTabs';
 import { WeekNav } from './components/WeekNav';
 import { DayList } from './components/DayList';
 import { DayStrip } from './components/DayStrip';
-import { NowBanner } from './components/NowBanner';
+import { NowCard } from './components/NowCard';
+import { DiffPanel } from './components/DiffPanel';
 import { ElectiveNudge } from './components/ElectiveNudge';
-import { SettingsSheet, type SheetSection } from './components/SettingsSheet';
+import { SettingsSheet } from './components/SettingsSheet';
+import { CalendarSync } from './components/CalendarSync';
 import { Footer } from './components/Footer';
+import { BottomNav } from './components/BottomNav';
+import { GearIcon } from './components/Icons';
+
+type DiffInfo = { tableGroupId: string; diffs: LessonDiff[]; count: number };
 
 export function App() {
-  const state = useSchedule();
+  const [source, navigate] = useSourceRoute();
+  // Таблица нужна и на локальной вкладке — чтобы посчитать отличия для бейджа
+  const local = useSchedule(SOURCES.local.dataUrl);
+  const table = useSchedule(SOURCES.table.dataUrl);
+  const state = source === 'local' ? local : table;
+
+  const stored = useMemo(loadStored, []);
+  const [tableGroup, setTableGroup] = useState(stored.group);
+  const [settings, setSettings] = useState(stored.settings);
+  const [nudgeDismissed, setNudgeDismissed] = useState(stored.nudgeDismissed ?? false);
+  // Неделя общая для обеих вкладок; null — текущая
+  const [weekStart, setWeekStart] = useState<string | null>(null);
+
+  useEffect(() => {
+    saveStored({ group: tableGroup, settings, nudgeDismissed });
+  }, [tableGroup, settings, nudgeDismissed]);
+
+  const localData = local.status === 'ready' ? local.data : undefined;
+  const tableData = table.status === 'ready' ? table.data : undefined;
+  const diff = useMemo<DiffInfo | null>(() => {
+    const lg = localData?.groups[0];
+    const tg = lg && tableData ? findMatchingGroup(lg, tableData.groups) : undefined;
+    if (!lg || !tg) return null;
+    const diffs = diffGroups(lg, tg);
+    return { tableGroupId: tg.id, diffs, count: diffs.filter(isSignificant).length };
+  }, [localData, tableData]);
+
+  useEffect(() => {
+    document.title = source === 'local' ? `${localData?.groups[0]?.name ?? 'Расписание'} · моё расписание` : 'Расписание из таблицы';
+  }, [source, localData]);
+
+  const showDiff = () => {
+    if (diff) setTableGroup(diff.tableGroupId);
+    navigate('table');
+  };
+
   return (
     <div className="app">
       {state.status === 'loading' && <Skeleton />}
-      {state.status === 'error' && (
-        <main className="center">
-          <h1>Расписание</h1>
-          <p className="error">Не удалось загрузить данные ({state.message}). Обновите страницу позже.</p>
-        </main>
+      {state.status === 'error' && <ErrorView source={source} message={state.message} />}
+      {state.status === 'ready' && (
+        <SchedulePage
+          key={source}
+          source={SOURCES[source]}
+          schedule={state.data}
+          groupId={source === 'table' ? tableGroup : undefined}
+          onGroupChange={setTableGroup}
+          allSettings={settings[source]}
+          onSettingsChange={(groupId, s) => setSettings((prev) => ({ ...prev, [source]: { ...prev[source], [groupId]: s } }))}
+          nudgeDismissed={nudgeDismissed}
+          onNudgeDismiss={() => setNudgeDismissed(true)}
+          weekStart={weekStart}
+          onWeekStart={setWeekStart}
+          diff={diff}
+          onShowDiff={showDiff}
+        />
       )}
-      {state.status === 'ready' && <Loaded schedule={state.data} />}
+      <BottomNav source={source} onNavigate={navigate} diffCount={diff?.count ?? 0} />
     </div>
   );
 }
 
-function Loaded({ schedule }: { schedule: Schedule }) {
-  const stored = useMemo(loadStored, []);
-  const [groupId, setGroupId] = useState(() => (schedule.groups.some((g) => g.id === stored.group) ? stored.group! : schedule.groups[0].id));
-  const [allSettings, setAllSettings] = useState<Record<string, GroupSettings>>(stored.settings);
-  const [nudgeDismissed, setNudgeDismissed] = useState(stored.nudgeDismissed ?? false);
-  const [sheet, setSheet] = useState<{ open: boolean; section: SheetSection }>({ open: false, section: 'settings' });
+type PageProps = {
+  source: Source;
+  schedule: Schedule;
+  groupId?: string;
+  onGroupChange: (id: string) => void;
+  allSettings: Record<string, GroupSettings>;
+  onSettingsChange: (groupId: string, s: GroupSettings) => void;
+  nudgeDismissed: boolean;
+  onNudgeDismiss: () => void;
+  weekStart: string | null;
+  onWeekStart: (start: string | null) => void;
+  diff: DiffInfo | null;
+  onShowDiff: () => void;
+};
+
+function SchedulePage({ source, schedule, groupId, onGroupChange, allSettings, onSettingsChange, nudgeDismissed, onNudgeDismiss, weekStart, onWeekStart, diff, onShowDiff }: PageProps) {
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   const now = useNow();
   const today = todayISO(now);
@@ -44,20 +110,30 @@ function Loaded({ schedule }: { schedule: Schedule }) {
 
   const group = schedule.groups.find((g) => g.id === groupId) ?? schedule.groups[0];
   const settings = useMemo(() => normalizeSettings(group, allSettings[group.id]), [group, allSettings]);
+  const hasSettings = group.slots.length > 0 || group.hasOptional;
+  const openSettings = () => setSheetOpen(true);
 
-  const currentWeek = findWeek(schedule.weeks, today);
-  const initialWeekIndex = currentWeek ? currentWeek.index : today < schedule.weeks[0].start ? 0 : schedule.weeks.length - 1;
-  const [weekIndex, setWeekIndex] = useState(initialWeekIndex);
-  const week = schedule.weeks[weekIndex];
+  const { weeks } = schedule;
+  const currentWeek = findWeek(weeks, today);
+  const defaultIndex = currentWeek ? currentWeek.index : today < weeks[0].start ? 0 : weeks.length - 1;
+  const weekIndex = weekStart ? indexOfWeek(weeks, weekStart) : defaultIndex;
+  const week = weeks[weekIndex];
   const isCurrentWeek = currentWeek?.index === weekIndex;
-  const todayDay = (new Date(now.getFullYear(), now.getMonth(), now.getDate()).getDay() + 6) % 7;
+  const setWeekIndex = (i: number) => {
+    const next = Math.min(weeks.length - 1, Math.max(0, i));
+    onWeekStart(next === currentWeek?.index ? null : weeks[next].start);
+  };
+  const weekIndexRef = useRef(weekIndex);
+  weekIndexRef.current = weekIndex;
+  const changeWeek = (delta: number) => setWeekIndex(weekIndexRef.current + delta);
 
-  useEffect(() => {
-    saveStored({ group: groupId, settings: allSettings, nudgeDismissed });
-  }, [groupId, allSettings, nudgeDismissed]);
-
-  const updateSettings = (next: GroupSettings) => setAllSettings((prev) => ({ ...prev, [group.id]: next }));
-  const openSheet = (section: SheetSection) => setSheet({ open: true, section });
+  // Отличия от личного расписания — только на вкладке таблицы и для той же группы
+  const pageDiff = source.id === 'table' && diff && diff.tableGroupId === group.id ? diff.diffs : null;
+  const diffById = useMemo(() => {
+    const m = new Map<string, LessonDiff>();
+    for (const d of pageDiff ?? []) if (isSignificant(d)) for (const id of d.tableIds) m.set(id, d);
+    return m;
+  }, [pageDiff]);
 
   // Дни с парами на этой неделе — для точек в полоске дней
   const daysWithLessons = useMemo(() => {
@@ -72,23 +148,56 @@ function Loaded({ schedule }: { schedule: Schedule }) {
 
   // Прокрутка к дню (полоска дней на телефоне, автопрокрутка к сегодня)
   const dayRefs = useRef<(HTMLElement | null)[]>([]);
+  const stickyHeight = () => (document.querySelector('.stickybar') as HTMLElement | null)?.offsetHeight ?? 0;
   const scrollToDay = useCallback((day: number, behavior: ScrollBehavior = 'smooth') => {
     const el = dayRefs.current[day];
     if (!el) return;
-    const offset = (document.querySelector('.header') as HTMLElement | null)?.offsetHeight ?? 0;
-    const top = el.getBoundingClientRect().top + window.scrollY - offset - 8;
+    const top = el.getBoundingClientRect().top + window.scrollY - stickyHeight() - 10;
     window.scrollTo({ top: Math.max(0, top), behavior });
   }, []);
 
-  const isMobile = () => window.matchMedia('(max-width: 899px)').matches;
+  // На телефоне прошедшие дни текущей недели свёрнуты, так что сегодня сразу под карточкой «Сейчас»
+  const [showPast, setShowPast] = useState(false);
+  const pastCollapsed = isCurrentWeek && !showPast;
   useEffect(() => {
-    if (isCurrentWeek && isMobile() && todayDay <= 5) scrollToDay(todayDay, 'auto');
-    else window.scrollTo({ top: 0 });
-  }, [weekIndex, group.id]); // eslint-disable-line react-hooks/exhaustive-deps
+    setShowPast(false);
+    window.scrollTo({ top: 0 });
+  }, [weekIndex, group.id]);
+  const pickDay = (day: number) => {
+    if (pastCollapsed && addDays(week.start, day) < today) {
+      setShowPast(true);
+      requestAnimationFrame(() => requestAnimationFrame(() => scrollToDay(day)));
+    } else scrollToDay(day);
+  };
+
+  // Какой день сейчас на экране — подсвечиваем его в полоске дней
+  const [activeDay, setActiveDay] = useState(-1);
+  useEffect(() => {
+    let raf = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const line = stickyHeight() + 40;
+        let active = -1;
+        let first = -1;
+        dayRefs.current.forEach((el, i) => {
+          if (!el || el.offsetParent === null) return; // свёрнутый день
+          if (first < 0) first = i;
+          if (el.getBoundingClientRect().top <= line) active = i;
+        });
+        setActiveDay(active < 0 ? Math.max(first, 0) : active);
+      });
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      cancelAnimationFrame(raf);
+    };
+  }, [weekIndex, group.id, showPast]);
 
   // Свайп влево/вправо по расписанию листает недели; стрелки на клавиатуре — тоже
   const touch = useRef<{ x: number; y: number } | null>(null);
-  const changeWeek = (delta: number) => setWeekIndex((i) => Math.min(schedule.weeks.length - 1, Math.max(0, i + delta)));
   const onTouchStart = (e: React.TouchEvent) => {
     touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
   };
@@ -101,40 +210,51 @@ function Loaded({ schedule }: { schedule: Schedule }) {
   };
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (sheet.open || (e.target as HTMLElement)?.tagName === 'INPUT') return;
+      if (sheetOpen || (e.target as HTMLElement)?.tagName === 'INPUT') return;
       if (e.key === 'ArrowLeft') changeWeek(-1);
       if (e.key === 'ArrowRight') changeWeek(1);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [sheet.open]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [sheetOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const isLocal = source.id === 'local';
 
   return (
     <>
-      <header className="header">
-        <div className="header__row">
-          <h1 className="header__title">Расписание</h1>
-          <div className="header__actions">
-            <button type="button" className="icon-btn" onClick={() => openSheet('calendar')} aria-label="Подписка на календарь">
-              <CalendarIcon />
-              <span className="icon-btn__label">Календарь</span>
-            </button>
-            <button type="button" className="icon-btn" onClick={() => openSheet('settings')} aria-label="Настройки">
-              <GearIcon />
-              <span className="icon-btn__label">Настройки</span>
-            </button>
+      <header className="top">
+        <div className="top__heading">
+          <span className="top__eyebrow">{isLocal ? 'Моё расписание' : 'Из общей таблицы'}</span>
+          <h1 className="top__title">{isLocal ? group.name : 'Расписание групп'}</h1>
+        </div>
+        {!isLocal && schedule.groups.length > 1 && (
+          <div className="top__tabs">
+            <GroupTabs groups={schedule.groups} value={group.id} onChange={onGroupChange} />
           </div>
-        </div>
-        <GroupTabs groups={schedule.groups} value={group.id} onChange={setGroupId} />
-        <div className="header__mobile">
-          <DayStrip week={week} today={today} daysWithLessons={daysWithLessons} onPick={(d) => scrollToDay(d)} />
-        </div>
+        )}
+        {hasSettings && (
+          <button type="button" className="icon-btn top__settings" onClick={openSettings} aria-label="Настройки">
+            <GearIcon />
+            <span className="icon-btn__label">Настройки</span>
+          </button>
+        )}
       </header>
 
+      <div className="stickybar">
+        <div className="stickybar__inner">
+          <WeekNav weeks={weeks} index={weekIndex} currentIndex={currentWeek?.index} onChange={setWeekIndex} />
+          <DayStrip week={week} today={today} activeDay={activeDay} daysWithLessons={daysWithLessons} onPick={pickDay} />
+        </div>
+      </div>
+
       <main className="main" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-        <WeekNav weeks={schedule.weeks} index={weekIndex} currentIndex={currentWeek?.index} onChange={setWeekIndex} />
-        {isCurrentWeek && <NowBanner group={group} week={week} settings={settings} today={today} nowHHMM={nowHHMM} todayDay={todayDay} />}
-        <ElectiveNudge group={group} settings={settings} dismissed={nudgeDismissed} onOpen={() => openSheet('settings')} onDismiss={() => setNudgeDismissed(true)} />
+        {(isCurrentWeek || pageDiff || !nudgeDismissed) && (
+          <div className="main__cards">
+            {isCurrentWeek && <NowCard group={group} settings={settings} weeks={weeks} today={today} nowHHMM={nowHHMM} />}
+            {pageDiff && <DiffPanel diffs={pageDiff} />}
+            <ElectiveNudge group={group} settings={settings} dismissed={nudgeDismissed} onOpen={openSettings} onDismiss={onNudgeDismiss} />
+          </div>
+        )}
         <DayList
           group={group}
           week={week}
@@ -142,51 +262,50 @@ function Loaded({ schedule }: { schedule: Schedule }) {
           pairTimes={schedule.pairTimes}
           today={today}
           nowHHMM={nowHHMM}
-          onOpenSettings={() => openSheet('settings')}
+          onOpenSettings={openSettings}
           dayRefs={dayRefs}
+          diffById={pageDiff ? diffById : undefined}
+          pastCollapsed={pastCollapsed}
+          onShowPast={() => setShowPast(true)}
         />
-        <p className="hint">Листайте недели свайпом или стрелками ← →</p>
+        <p className="hint">Свайп влево или вправо листает недели</p>
+        <CalendarSync source={source} group={group} settings={settings} onOpenSettings={hasSettings ? openSettings : undefined} />
+        <Footer source={source.id} schedule={schedule} diffCount={diff?.count ?? 0} onShowDiff={onShowDiff} />
       </main>
 
-      <Footer schedule={schedule} />
-
-      <SettingsSheet
-        open={sheet.open}
-        section={sheet.section}
-        onClose={() => setSheet((s) => ({ ...s, open: false }))}
-        group={group}
-        settings={settings}
-        onChange={updateSettings}
-      />
+      <SettingsSheet open={sheetOpen} onClose={() => setSheetOpen(false)} group={group} settings={settings} onChange={(s) => onSettingsChange(group.id, s)} />
     </>
   );
 }
 
+function indexOfWeek(weeks: Week[], start: string): number {
+  const i = weeks.findIndex((w) => w.start >= start);
+  return i < 0 ? weeks.length - 1 : i;
+}
+
 function Skeleton() {
   return (
-    <main className="center" aria-busy="true">
-      <h1>Расписание</h1>
-      <div className="skeleton" />
+    <main className="main" aria-busy="true">
+      <div className="skeleton skeleton--title" />
+      <div className="skeleton skeleton--card" />
       <div className="skeleton" />
       <div className="skeleton" />
     </main>
   );
 }
 
-function GearIcon() {
+function ErrorView({ source, message }: { source: SourceId; message: string }) {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
-    </svg>
-  );
-}
-
-function CalendarIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="3" y="5" width="18" height="16" rx="2" />
-      <path d="M3 10h18M8 3v4M16 3v4" />
-    </svg>
+    <main className="main">
+      <div className="error-card">
+        <h1>Не удалось загрузить расписание</h1>
+        <p>
+          {source === 'local' ? 'Личное расписание' : 'Данные таблицы'} не загрузились ({message}). Проверьте интернет и обновите страницу.
+        </p>
+        <button type="button" className="btn btn--primary" onClick={() => window.location.reload()}>
+          Обновить
+        </button>
+      </div>
+    </main>
   );
 }

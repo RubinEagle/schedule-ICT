@@ -1,13 +1,32 @@
 import type { Schedule } from '../../shared/types';
-import { formatUpdated } from '../lib/format';
+import type { SourceId } from '../lib/source';
+import { formatUpdated, plural } from '../lib/format';
+import { ExternalIcon } from './Icons';
 
-export function Footer({ schedule }: { schedule: Schedule }) {
+type Props = { source: SourceId; schedule: Schedule; diffCount: number; onShowDiff: () => void };
+
+export function Footer({ source, schedule, diffCount, onShowDiff }: Props) {
   return (
     <footer className="footer">
-      <span>Данные обновлены {formatUpdated(schedule.sourceModified)}</span>
-      <a href={schedule.sourceUrl} target="_blank" rel="noopener noreferrer">
-        Исходная таблица
-      </a>
+      {source === 'local' ? (
+        <>
+          <span>Личное расписание · обновлено {formatUpdated(schedule.sourceModified)}</span>
+          {diffCount > 0 && (
+            <button type="button" className="link-btn" onClick={onShowDiff}>
+              В таблице {diffCount} {plural(diffCount, ['отличие', 'отличия', 'отличий'])} →
+            </button>
+          )}
+        </>
+      ) : (
+        <>
+          <span>Таблица от {formatUpdated(schedule.sourceModified)} · проверяется по воскресеньям</span>
+          {schedule.sourceUrl && (
+            <a href={schedule.sourceUrl} target="_blank" rel="noopener noreferrer">
+              Исходная таблица <ExternalIcon />
+            </a>
+          )}
+        </>
+      )}
     </footer>
   );
 }

@@ -4,11 +4,12 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "npm run local && vite",
+    "build": "npm run local && vite build",
     "preview": "vite preview",
     "data": "tsx scripts/build-data.ts",
     "data:local": "tsx scripts/build-data.ts --file tests/fixtures/schedule.xlsx",
+    "local": "tsx scripts/build-local.ts",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json --noEmit"
   },

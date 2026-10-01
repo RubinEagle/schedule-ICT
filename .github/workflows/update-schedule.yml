@@ -2,8 +2,8 @@ name: Update schedule data
 
 on:
   schedule:
-    # каждые 3 часа (UTC)
-    - cron: '0 */3 * * *'
+    # раз в неделю: воскресенье, 15:00 UTC = 18:00 МСК
+    - cron: '0 15 * * 0'
   workflow_dispatch:
   push:
     branches: [main]
@@ -11,6 +11,8 @@ on:
       - 'shared/**'
       - 'scripts/**'
       - 'data/**'
+      # личное расписание к таблице отношения не имеет — оно собирается при деплое
+      - '!data/local-schedule.json'
       - '.github/workflows/update-schedule.yml'
 
 permissions:

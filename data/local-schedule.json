@@ -1,0 +1,176 @@
+{
+  "metadata": {
+    "group": "ИВТ-14МО",
+    "semester": "Осень 2026/27",
+    "semester_start": "2026-08-31",
+    "semester_end": "2027-01-08",
+    "updated_at": "2026-10-01",
+    "week_types": {
+      "numerator": "Числитель — нечётные недели",
+      "denominator": "Знаменатель — чётные недели"
+    },
+    "days_off": [
+      "Среда",
+      "Суббота"
+    ]
+  },
+  "schedule": [
+    {
+      "day": "Понедельник",
+      "pair": 1,
+      "start_time": "09:00",
+      "end_time": "10:35",
+      "subject": "Машинное обучение",
+      "teacher": "Быстров Л.Ю.",
+      "room": "309",
+      "week_type": [
+        "numerator"
+      ],
+      "optional": false,
+      "facultative": false,
+      "online": false
+    },
+    {
+      "day": "Понедельник",
+      "pair": 2,
+      "start_time": "10:45",
+      "end_time": "12:20",
+      "subject": "Технологии функционального программирования в современных информационных системах",
+      "teacher": "Васильев А.М.",
+      "room": "223",
+      "week_type": [
+        "numerator",
+        "denominator"
+      ],
+      "optional": true,
+      "facultative": false,
+      "online": false
+    },
+    {
+      "day": "Понедельник",
+      "pair": 5,
+      "start_time": "16:50",
+      "end_time": "18:25",
+      "subject": "Современные редакторские технологии",
+      "teacher": "Шабаршин В.А.",
+      "room": "215",
+      "week_type": [
+        "numerator",
+        "denominator"
+      ],
+      "optional": false,
+      "facultative": true,
+      "online": false
+    },
+    {
+      "day": "Вторник",
+      "pair": 1,
+      "start_time": "09:00",
+      "end_time": "10:35",
+      "subject": "Иностранный язык",
+      "teacher": "Пермякова Д.И.",
+      "room": "416",
+      "week_type": [
+        "numerator"
+      ],
+      "optional": false,
+      "facultative": false,
+      "online": false
+    },
+    {
+      "day": "Вторник",
+      "pair": 2,
+      "start_time": "10:45",
+      "end_time": "12:20",
+      "subject": "Анализ алгоритмов и сложность вычислений",
+      "teacher": "Николаев А.В.",
+      "room": "304",
+      "week_type": [
+        "numerator",
+        "denominator"
+      ],
+      "optional": false,
+      "facultative": false,
+      "online": false
+    },
+    {
+      "day": "Вторник",
+      "pair": 3,
+      "start_time": "13:20",
+      "end_time": "14:55",
+      "subject": "Автоматический анализ текстов",
+      "teacher": "Адрианова А.М.",
+      "room": "304",
+      "week_type": [
+        "numerator",
+        "denominator"
+      ],
+      "optional": false,
+      "facultative": false,
+      "online": false
+    },
+    {
+      "day": "Вторник",
+      "pair": 4,
+      "start_time": "15:05",
+      "end_time": "16:40",
+      "subject": "Современная философия и методология науки",
+      "teacher": "Мусин М.З.",
+      "room": "312",
+      "week_type": [
+        "numerator",
+        "denominator"
+      ],
+      "optional": false,
+      "facultative": false,
+      "online": false
+    },
+    {
+      "day": "Четверг",
+      "pair": 2,
+      "start_time": "10:45",
+      "end_time": "12:20",
+      "subject": "Непрерывные математические модели",
+      "teacher": "Глызин С.Д.",
+      "room": "226",
+      "week_type": [
+        "numerator",
+        "denominator"
+      ],
+      "optional": false,
+      "facultative": false,
+      "online": false
+    },
+    {
+      "day": "Четверг",
+      "pair": 4,
+      "start_time": "15:00",
+      "end_time": "16:30",
+      "subject": "Оценка качества программного обеспечения",
+      "teacher": "Хинт",
+      "room": "304",
+      "week_type": [
+        "numerator",
+        "denominator"
+      ],
+      "optional": true,
+      "facultative": false,
+      "online": true
+    },
+    {
+      "day": "Пятница",
+      "pair": 1,
+      "start_time": "09:00",
+      "end_time": "10:35",
+      "subject": "Машинное обучение",
+      "teacher": "Гладков А.Н.",
+      "room": "216",
+      "week_type": [
+        "denominator"
+      ],
+      "optional": false,
+      "facultative": false,
+      "online": false
+    }
+  ]
+}

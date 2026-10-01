@@ -52,6 +52,8 @@ export type Group = {
   lessons: Lesson[];
   slots: ElectiveSlot[];
   hasOptional: boolean;
+  /** Дни без пар (0 = понедельник), показываются как «выходной» */
+  daysOff?: number[];
 };
 
 /** Стандартное время пары в конкретный день недели (в субботу оно отличается) */

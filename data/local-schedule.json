@@ -100,7 +100,7 @@
       "end_time": "14:05",
       "subject": "Автоматический анализ текстов",
       "teacher": "Адрианова А.М.",
-      "room": "304",
+      "room": "301",
       "week_type": [
         "numerator",
         "denominator"
@@ -159,14 +159,14 @@
     },
     {
       "day": "Пятница",
-      "pair": 1,
-      "start_time": "09:00",
-      "end_time": "10:35",
+      "pair": 3,
+      "start_time": "13:20",
+      "end_time": "14:55",
       "subject": "Машинное обучение",
       "teacher": "Гладков А.Н.",
       "room": "216",
       "week_type": [
-        "denominator"
+        "numerator"
       ],
       "optional": false,
       "facultative": false,
